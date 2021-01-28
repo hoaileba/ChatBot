@@ -11,7 +11,7 @@ from . import socketio, main_blue
 
 @main_blue.route('/chat')
 def chat():
-    return render_template('chat.html')
+    return render_template('chat1.html')
 
 
 # @app.route("/apis/init",methods=['GET','POST'])
@@ -26,7 +26,7 @@ def initDialogue(message):
 @socketio.on('text', namespace='/chat')
 def text(message):
     print(message)
-    emit('message', {'msg': 'User : ' +  message['msg']+'\n'})
+    emit('message', {'msg': message['msg']+'\n'})
 
 
 # @app.route('/apis/conversation',methods = ['POST'])
@@ -336,7 +336,11 @@ def Bot(requestUser):
 
     # print("last: ",last.count())
     # mess = Request_dia(id_dia=dialog,req = data['mess'],)
-    emit('message',{'msg':'Bot :  '+repmess+'\n','conversation_id':dialog})
+    all_line = repmess.split('\n')
+    s = ''
+    for line in all_line:
+        s+= '<p>' + line + '</p>' 
+    emit('message_bot',{'msg':s+'\n','conversation_id':dialog})
     # return jsonify({
     #     'intent':intent,
     #     'action':'action_'+action,
