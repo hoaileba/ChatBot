@@ -10,6 +10,8 @@ certifi==2020.12.5
 chardet==4.0.0
 Click==7.0
 cycler==0.10.0
+Django==3.0.3
+django-livereload-server==0.3.2
 dnspython==1.16.0
 eventlet==0.25.1
 Flask==1.1.2
@@ -55,6 +57,7 @@ pyasn1-modules==0.2.8
 PyJWT==2.0.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
+python-dotenv==0.15.0
 python-editor==1.0.4
 python-engineio==3.14.2
 python-mnist==0.6

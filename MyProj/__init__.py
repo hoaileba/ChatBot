@@ -26,17 +26,19 @@ def create_app(test_config=None):
     instance_path = "MyProj/models"
     app = Flask(__name__, instance_relative_config=True)
     app.register_blueprint(main_blue)
-    app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(instance_path, 'database'),
-    )
+    app.config.from_pyfile('settings.py')
+    # print(app.con fig)
+    # app.config.from_mapping(
+    #     SECRET_KEY='dev',
+    #     DATABASE=os.path.join(instance_path, 'database'),
+    # )
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
+    # if test_config is None:
+    #     # load the instance config, if it exists, when not testing
+    #     app.config.from_pyfile('config.py', silent=True)
+    # else:
+    #     # load the test config if passed in
+    #     app.config.from_mapping(test_config)
 
     # ensure the instance folder exists
     try:
@@ -47,6 +49,7 @@ def create_app(test_config=None):
     socketio.init_app(app)
     # a simple page t
     # hat says hello
+    print(app.config)
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
@@ -54,3 +57,11 @@ def create_app(test_config=None):
     return app
 
 from . import api
+# from . import run
+# app = create_app()
+# if __name__ == '__main__':
+#     socketio.run(app,debug=True)
+
+#     # 
+#     app.run(debug=True)
+

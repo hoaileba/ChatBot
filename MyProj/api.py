@@ -1,6 +1,6 @@
 import json
 from flask import request, jsonify, Blueprint, abort, render_template, session, redirect, url_for
-from flask import Flask
+from flask import Flask,current_app
 import re
 from flask_socketio import SocketIO, emit  ,send 
 from . import db
@@ -8,7 +8,7 @@ from .NLP import standard,Predict,get_train_data,dic_champ
 import sys
 from . import socketio, main_blue
 
-
+# print()
 @main_blue.route('/chat')
 def chat():
     return render_template('chat1.html')
@@ -347,3 +347,7 @@ def Bot(requestUser):
     #     'message': repmess,
 
 
+# app = create_app()
+
+# if __name__ == '__main__':
+    # socketio.run(app,debug=True)
