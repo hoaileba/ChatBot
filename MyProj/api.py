@@ -13,7 +13,7 @@ app = create_app()
 @app.route('/chat')
 def chat():
     return render_template('chat1.html')
-socketio  = SocketIO(app)
+socketio  = SocketIO(app, cors_allowed_origins='*', engineio_logger=True)
 
 # @app.route("/apis/init",methods=['GET','POST'])
 @socketio.on('initDialogue',namespace = '/chat')

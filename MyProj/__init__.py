@@ -46,7 +46,7 @@ def create_app(test_config=None):
     except OSError:
         pass
     db.init_app(app)
-    # socketio.init_app(app)
+    # rocketio.init_app(app)
     # a simple page t
     # hat says hello
     print(app.config)
