@@ -46,7 +46,7 @@ def create_app(test_config=None):
     except OSError:
         pass
     db.init_app(app)
-    socketio.init_app(app)
+    # socketio.init_app(app)
     # a simple page t
     # hat says hello
     print(app.config)
@@ -55,7 +55,8 @@ def create_app(test_config=None):
         return 'Hello, World!'
 
     return app
-
+# app = create_app()
+# socketio = SocketIO(app)
 from . import api
 # from . import run
 # app = create_app()

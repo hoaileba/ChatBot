@@ -240,7 +240,7 @@ input.textarea {
             var socket;
             var id = 0;
             $(document).ready(function(){
-                socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+                socket = io.connect('http://14.171.110.74:5000/chat');
                 socket.on('connect', function() {
                     socket.emit('initDialogue', {});
                 });

@@ -65,7 +65,8 @@
             var socket;
             var id = 0;
             $(document).ready(function(){
-                socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+                console.log(location.port)
+                socket = io.connect('http://' + document.domain + ':' + "6000" + '/chat');
                 socket.on('connect', function() {
                     socket.emit('initDialogue', {});
                 });

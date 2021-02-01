@@ -6,13 +6,14 @@ from flask_socketio import SocketIO, emit  ,send
 from . import db
 from .NLP import standard,Predict,get_train_data,dic_champ
 import sys
-from . import socketio, main_blue
+from . import  main_blue,socketio,create_app
+app = create_app()
 
 # print()
-@main_blue.route('/chat')
+@app.route('/chat')
 def chat():
     return render_template('chat1.html')
-
+socketio  = SocketIO(app)
 
 # @app.route("/apis/init",methods=['GET','POST'])
 @socketio.on('initDialogue',namespace = '/chat')
@@ -351,3 +352,4 @@ def Bot(requestUser):
 
 # if __name__ == '__main__':
     # socketio.run(app,debug=True)
+    # app.run(debug=True)
