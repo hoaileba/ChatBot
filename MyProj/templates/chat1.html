@@ -249,7 +249,7 @@ input.textarea {
                 socket.on('status', function(data) {
                     id = data.conversation_id
                     console.log(id)
-                    $('ol').append("<li class='other'><div class='avatar'><img src='https://i.imgur.com/DY6gND0.png' draggable='false'/></div><div class='msg'><p>welcome</p></div></li>");
+                    $('ol').append("<li class='other'><div class='avatar'><img src='https://i.imgur.com/DY6gND0.png' draggable='false'/></div><div class='msg'><p>" + data.msg + "</p></div></li>");
                     $(document).scrollTop($(document).height());
                 });
                     
