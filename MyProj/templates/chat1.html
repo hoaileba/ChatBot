@@ -232,7 +232,7 @@ input.textarea {
 }
 
     </style>
-    <title>Flask-SocketIO-Chat </title>
+    <title>ChatBot LOL </title>
         <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
 	<!--<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>-->
 	<script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
@@ -270,10 +270,11 @@ input.textarea {
                     if (code == 13) {
                         text = $('#text').val();
                         $('#text').val('');
-                      
-                        
-                        socket.emit('text',{msg: text,'conversation_id' : id});
-                        socket.emit('Bot',{msg:text, 'conversation_id': id});
+                        if (text != '')
+                        {
+                            socket.emit('text',{msg: text,'conversation_id' : id});
+                            socket.emit('Bot',{msg:text, 'conversation_id': id});
+                        }
                        
                     }
                     
