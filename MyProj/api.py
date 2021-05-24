@@ -8,6 +8,12 @@ from .NLP import standard,Predict,get_train_data,dic_champ
 import sys
 from . import socketio, main_blue
 
+welcome_mess=' Xin chào mình là bot hỏi đáp liên minh:\n   Mọi người khi đặt câu hỏi cần chú ý: \n - các câu hỏi được đặt sẽ chỉ xoay quanh các chủ đê:\n + cách chơi\n + cách build đồ\n + cách lên skill\n + cách combo\n + khắc chế\n + kết hợp các tướng\n + cách dùng skill\n- tất cả các chữ đều viết thường trừ tên riêng hay skill thì mong các bạn viết hoa chữ đầu\n - các bạn hạn chế viết tắt nhé\n- ngoài ra nếu có điều gì không hài lòng mong bạn đừng chửi :((  '
+all_linew = welcome_mess.split('\n')
+sw= ''
+for line in all_linew:
+    sw+= '<p>' + line + '</p>' 
+
 
 @main_blue.route('/chat')
 def chat():
@@ -21,17 +27,19 @@ def initDialogue(message):
     print('Send')
     c = db.getCount()
     db.addInit()
-    emit('status',{'conversation_id':c})
+    emit('status',{'conversation_id':c, 'mess' : sw})
 
 @socketio.on('text', namespace='/chat')
 def text(message):
     print(message)
-    emit('message', {'msg': 'User : ' +  message['msg']+'\n'})
+    emit('message', {'msg':  message['msg']+'\n'})
 
 
 # @app.route('/apis/conversation',methods = ['POST'])
 @socketio.on('Bot',namespace = '/chat')
 def Bot(requestUser):
+    if requestUser['msg'] == '' or requestUser['msg'] == None :
+        return 'unsend'
     print('bot ',requestUser)
     dialog = requestUser['conversation_id']
     
@@ -54,12 +62,13 @@ def Bot(requestUser):
         action = 'Unknow'
     test = standard(datatext)
     # print(test)
-    dic_play = ['chơi','dùng','sử dụng']
+    dic_play = ['chơi','dùng','sử dụng','cách chơi','đánh']
     dic_use = ['dùng','sử dụng']
     dic_object = ['nó','tướng','con này','hero','champ','anh hùng']
     dic_skill = ['chiêu','skill','ký năng']
     intent = pred['intent']
     
+
     if pred['intent'] == 'how_to_play':
         cnt = 0 
         for w in dic_play:
@@ -77,9 +86,13 @@ def Bot(requestUser):
                 cnt1+=1
         if cnt1 == 0 or cnt == 0:
             intent = 'Unknow'
+        if test[0] == 'cách chơi':
+            intent = 'how_to_play'
                 # break
     pred['intent'] = intent
     action = intent
+    # print(intent)
+
     # if pred['intent'] != intent:
     hero = ''
     skill = ''
@@ -96,10 +109,10 @@ def Bot(requestUser):
         # print(last.intent)
         if last['intent'] != 'Unknow' and pred['entities']!={} and pred['intent'] == 'Unknow':
             # if 
-            if (last['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with']) and 'hero' in pred['entities'] :
+            if (last['intent'] in ['how_to_play','build_item','counter','be_countered','skill_up','introduce','combo','support_socket','combine_with']) and 'hero' in pred['entities'] :
                 hero = pred['entities']['hero']
                 pred['intent'] = last['intent']
-            if (last['intent'] == 'how_to_use_skill' or last['intent'] == 'skill_up' ) and ('hero' in pred['entities'] or 'skill' in pred['entities']) :
+            if (last['intent'] == 'how_to_use_skill' ) and ('hero' in pred['entities'] or 'skill' in pred['entities']) :
                 if hero == '':
                     hero = last['hero']
                 if skill == '':
@@ -120,11 +133,11 @@ def Bot(requestUser):
     # if()
         if intent == 'Unknow':
             # print('yes')
-            if hero != '' and (last['action'] == 'ask_hero' or last['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with']):
+            if hero != '' and (last['action'] == 'ask_hero' or last['intent'] in ['how_to_play','build_item','skill_up','counter','be_countered','introduce','combo','support_socket','combine_with']):
                 intent = last['intent'] 
                 action = intent
                 pred['intent'] = intent
-            if skill != '' and (last['action'] == 'ask_skill' or last['intent'] in ['how_to_use_skill','skill_up']):
+            if skill != '' and (last['action'] == 'ask_skill' or last['intent'] in ['how_to_use_skill']):
                 intent = last['intent']
                 action = intent
                 pred['intent'] = intent
@@ -134,7 +147,7 @@ def Bot(requestUser):
     
     # if pred['intent'] in ['how_to_play', 'introduce','combo','counter','be_countered'] 
         pred['intent'] = intent
-        if (last['intent'] == 'how_to_use_skill' or last['intent'] == 'skill_up' ) and (skill =='' or hero =='') and last['intent'] == pred['intent'] :
+        if (last['intent'] == 'how_to_use_skill') and (skill =='' or hero =='') and last['intent'] == pred['intent'] :
             if skill == '' and hero == '':
                 repmess = 'bạn muốn hỏi skill gì và của tướng nào vậy :(('
                 action = 'ask_hero_and_skill'
@@ -144,17 +157,17 @@ def Bot(requestUser):
             if skill !='' and hero == '':
                 repmess = 'Có nhiều tướng có skill '+ skill +' mà bạn bạn nói rõ hơn được không :(( ?'
                 action  = 'ask_hero'
-        if(last['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with']) and hero == '' and last['intent'] == pred['intent']:
+        if(last['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with','skill_up']) and hero == '' and last['intent'] == pred['intent']:
             repmess = 'bạn vui lòng nói rõ tên tướng hộ mình'
             action = 'ask_hero'
         if pred['intent'] != 'Unknow' and pred['intent'] != last['intent'] and last['intent'] != 'Unknow':
-            if pred['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with'] and hero == '':
+            if pred['intent'] in ['how_to_play','build_item','counter','be_countered','introduce', 'skill_up','combo','support_socket','combine_with'] and hero == '':
                 if last['hero'] != '':
                     hero = last['hero']
                 else :
                     repmess = 'bạn vui lòng nói rõ tên tướng hộ mình'
                     action = 'ask_hero'
-            if pred['intent'] in ['how_to_use_skill', 'skill_up']:
+            if pred['intent'] in ['how_to_use_skill']:
                 if hero == '' and skill != '': 
                     if last['hero'] !='':
                         hero = last['hero']
@@ -168,26 +181,54 @@ def Bot(requestUser):
                     repmess = 'bạn muốn hỏi skill gì và của tướng nào vậy :(('
                     action = 'ask_hero_and_skill'
         if pred['intent'] != 'Unknow' and last['intent'] == 'Unknow':
-            if (pred['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with']) and hero == '':
+            if (pred['intent'] in ['how_to_play','build_item', 'skill_up','counter','be_countered','introduce','combo','support_socket','combine_with']) and hero == '':
                 repmess = 'bạn vui lòng nói rõ tên tướng hộ mình'
                 action = 'ask_hero'
-            if (pred['intent'] in ['how_to_use_skill', 'skill_up']) and hero =='' and skill !='' :
+            if (pred['intent'] in ['how_to_use_skill']) and hero =='' and skill !='' :
                 repmess = 'bạn muốn biết skill '+ skill + ' của tướng nào vậy ạ ?'
                 action = 'ask_hero'
-            if (pred['intent'] in ['how_to_use_skill', 'skill_up']) and hero !='' and skill =='' :
+            if (pred['intent'] in ['how_to_use_skill']) and hero !='' and skill =='' :
                 repmess = 'bạn muốn biết skill nào của '+ hero + ' vậy ạ ?'
                 action = 'ask_skill'
-            if (pred['intent'] in ['how_to_use_skill', 'skill_up']) and hero =='' and skill =='' :
+            if (pred['intent'] in ['how_to_use_skill']) and hero =='' and skill =='' :
                 repmess = 'bạn vui lòng nói rõ tên tướng và skill giúp mình với ạ'
                 action = 'ask_hero_and_skill'
+        if pred['intent'] != 'Unknow' and last['intent'] == 'Unknow':
             
+                
+            if (pred['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with','skill_up']) and hero == '':
+                repmess = 'bạn vui lòng nói rõ tên tướng hộ mình'
+                action = 'ask_hero'
+                if (last['action'] == 'ask_intent' or last['action'] =='ask_hero' ) and last['hero']!='':
+                    action=pred['intent']
+                    hero = last['hero']
+
+
+
+            if (pred['intent'] in ['how_to_use_skill']) and hero =='' and skill !='' :
+                repmess = 'bạn muốn biết skill '+ skill + ' của tướng nào vậy ạ ?'
+                action = 'ask_hero'
+                if (last['action'] == 'ask_intent' or last['action'] =='ask_hero' ) and last['hero']!='':
+                    action=pred['intent']
+                    hero = last['hero']
+
+            if (pred['intent'] in ['how_to_use_skill']) and hero !='' and skill =='' :
+                repmess = 'bạn muốn biết skill nào của '+ hero + ' vậy ạ ?'
+                action = 'ask_skill'
+                if (last['action'] == 'ask_intent' or last['action'] =='ask_skill' ) and last['skill']!='':
+                    action=pred['intent']
+                    skill = last['skill']
+
+            if (pred['intent'] in ['how_to_use_skill']) and hero =='' and skill =='' :
+                repmess = 'bạn vui lòng nói rõ tên tướng và skill giúp mình với ạ'
+                action = 'ask_hero_and_skill'   
         if pred['intent'] == 'Unknow' and last['intent'] == 'Unknow':
             
             if hero != '':
-                repmess = 'Bạn muốn biết thông tin gì về tướng '+ hero +'ạ'
+                repmess = 'Bạn muốn biết thông tin gì về tướng '+ hero +' ạ'
                 action = 'ask_intent'
             if skill != '':
-                repmess = 'Bạn muốn biết thông tin gì về skill ' + skill + 'ạ'
+                repmess = 'Bạn muốn biết thông tin gì về skill ' + skill + ' ạ'
                 action = "ask_intent"
             if hero != '' and skill != '':
                 repmess= 'mình không rõ câu hỏi của bạn lắm bạn, bạn có thể hỏi rõ hơn được khoong? '
@@ -198,25 +239,26 @@ def Bot(requestUser):
     else :
         if intent == 'Unknow':
             if hero != '':
-                repmess = 'Bạn muốn biết thông tin gì về tướng '+ hero +'ạ'
+                repmess = 'Bạn muốn biết thông tin gì về tướng '+ hero +' ạ'
                 action = 'ask_intent'
             if skill != '':
-                repmess = 'Bạn muốn biết thông tin gì về skill ' + skill + 'ạ'
+                repmess = 'Bạn muốn biết thông tin gì về skill ' + skill + ' ạ'
                 action = "ask_intent"
             if hero != '' and skill != '':
                 repmess= 'mình không rõ câu hỏi của bạn lắm bạn, bạn có thể hỏi rõ hơn được khoong? '
                 action = 'ask_intent'
         else :
-            if (pred['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with']) and hero == '':
+            if (pred['intent'] in ['how_to_play','build_item','counter','be_countered','introduce','combo','support_socket','combine_with','skill_up']) and hero == '':
                 repmess = 'bạn vui lòng nói rõ tên tướng hộ mình'
                 action = 'ask_hero'
-            if (pred['intent'] in ['how_to_use_skill', 'skill_up']) and hero =='' and skill !='' :
+                print(repmess)
+            if (pred['intent'] in ['how_to_use_skill']) and hero =='' and skill !='' :
                 repmess = 'bạn muốn biết skill '+ skill + ' của tướng nào vậy ạ ?'
                 action = 'ask_hero'
-            if (pred['intent'] in ['how_to_use_skill', 'skill_up']) and hero !='' and skill =='' :
+            if (pred['intent'] in ['how_to_use_skill']) and hero !='' and skill =='' :
                 repmess = 'bạn muốn biết skill nào của '+ hero + ' vậy ạ ?'
                 action = 'ask_skill'
-            if (pred['intent'] in ['how_to_use_skill', 'skill_up']) and hero =='' and skill =='' :
+            if (pred['intent'] in ['how_to_use_skill']) and hero =='' and skill =='' :
                 repmess = 'bạn vui lòng nói rõ tên tướng và skill giúp mình với ạ'
                 action = 'ask_hero_and_skill'
     
@@ -259,17 +301,17 @@ def Bot(requestUser):
                         repmess = 'Xin lỗi bạn hiện tại mình chưa có dữ liệu về skill W của '+ hero +' :(( . Mình sẽ cập nhật sớm nhất'
                         action = 'no_answer'
             if skill == 'E' and pred['intent'] == 'how_to_use_skill':
-                if check_(message['how_to_use_skill_E']) and hero != '':
-                    repmess = message['how_to_use_skill_E']
-                else :
-                    if check_(message['how_to_use_skill_E']) == False:
-                        repmess = 'Xin lỗi bạn hiện tại mình chưa có dữ liệu về skill E của '+ hero +' :(( . Mình sẽ cập nhật sớm nhất'
-                        action = 'no_answer'
-            if skill == 'R' and pred['intent'] == 'how_to_use_skill':
                 if check_(message['how_to_use_skill_R']) and hero != '':
                     repmess = message['how_to_use_skill_R']
                 else :
                     if check_(message['how_to_use_skill_R']) == False:
+                        repmess = 'Xin lỗi bạn hiện tại mình chưa có dữ liệu về skill E của '+ hero +' :(( . Mình sẽ cập nhật sớm nhất'
+                        action = 'no_answer'
+            if skill == 'R' and pred['intent'] == 'how_to_use_skill':
+                if check_(message['how_to_use_skill_E']) and hero != '':
+                    repmess = message['how_to_use_skill_E']
+                else :
+                    if check_(message['how_to_use_skill_E']) == False:
                         repmess = 'Xin lỗi bạn hiện tại mình chưa có dữ liệu về skill R của '+ hero +' :(( . Mình sẽ cập nhật sớm nhất'
                         action = 'no_answer'
             if pred['intent'] == 'skill_up':
@@ -333,13 +375,28 @@ def Bot(requestUser):
     if requestUser['msg'] != '':
         mess = db.addReq(id_dia_id=dialog,req = requestUser['msg'],hero = hero,skill = skill,intent= intent,action = action)
         # mess.save()
-
+    # print(intent,action, hero, skill, repmess)
+    if action == 'Unknow':
+        repmess = 'bạn có thể đặt lại câu hỏi được không ?'
     # print("last: ",last.count())
     # mess = Request_dia(id_dia=dialog,req = data['mess'],)
-    emit('message',{'msg':'Bot :  '+repmess+'\n','conversation_id':dialog})
+    if intent != 'Unknow' and action == intent and hero != '':
+        repmess = 'tướng '+hero +'\n' + repmess
+        # print(req)
+    all_line = repmess.split('\n')
+    s = ''
+    for line in all_line:
+        s+= '<p>' + line + '</p>' 
+    
+    emit('message_bot',{'msg':s+'\n','conversation_id':dialog})
     # return jsonify({
     #     'intent':intent,
     #     'action':'action_'+action,
     #     'message': repmess,
 
 
+# app = create_app()
+
+# if __name__ == '__main__':
+    # socketio.run(app,debug=True)
+    # app.run(debug=True)
