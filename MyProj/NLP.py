@@ -51,7 +51,7 @@ all_skill = ['W','Q', 'E', 'R']
 stop_words = ['','ạ','ơi','chị','bạn','ừ','nhỉ',
               'nhờ','nhể','hả','em','anh','ê','à',
               'bot','về','với','hình như','thấy',
-              'không','cứ','sai','hay sao','thế','đi','khỏe','yếu','ơ','đang','bảo là','sao','như nào','vậy']
+              'không','cứ','sai','hay sao','thế','đi','khỏe','yếu','ơ','đang','bảo là','sao','như nào','vậy','đi mid','đi rừng','đi sp','đi lane','đi ad']
 all_intent = ['combine_with', 
               'be_countered', 
               'skill_up', 
@@ -69,7 +69,7 @@ for intent in all_intent:
   id+=1
 dict_replace = {'cộng':'lên','up':'lên','nâng':'lên','hành':'counter','thắng':'counter','săn':'counter','giết':'counter','đồ sát':'counter',
                 'đi cùng':'chơi chung','đánh cùng':'chơi chung','ăn':'counter','sợ':'bị counter','xiên':'counter','hạ':'counter','phang':'counter'
-                ,'đấm':'counter','kia':'gì'}
+                ,'đấm':'counter','kia':'gì','thua': 'bị counter','solo': 'đánh'}
 df_test_2 = pd.read_csv(dir_test_2)
 
 X_test_2 = df_test_2['0']
@@ -95,6 +95,7 @@ for line in all_champions:
                 dic_hero[p] = name
                 all_name.append(p)
     all_name.append(name)
+all_name.append('Rell')
 def standard(all_line):
   all_l = []
   xx = []
@@ -204,6 +205,7 @@ def Predict(Data_test,Raw):
     dic_hero = {}
     skill = []
     hero = []
+    ind = []
     # print(Raw)
     for line in Raw:
         line = ' '+line+' '
@@ -220,6 +222,8 @@ def Predict(Data_test,Raw):
             for w in words:
                 if hh == w:
                     cor.append(hh)
+                    # print(hh)
+                    ind.append(re.search(hh, line).start())
                     break
         hero.append(cor)
         sk = re.findall('\s+[A-Z]\s+',line)
@@ -227,7 +231,11 @@ def Predict(Data_test,Raw):
             skill.append(sk[0].split(' ')[1])
         else:
             skill.append('')
-
+    # for h in hero[0]:
+    #   id = Raw.index(h)
+    id = ind.index(min(ind))
+    # print(hero[0][id])
+    # print(ind)
     ghi = []
     tmp = {}
     tmp['intent'] = all_intent[pred[0]]
@@ -235,7 +243,7 @@ def Predict(Data_test,Raw):
     if skill[0] != '':
         enti['skill'] = skill[0]
     if hero[0]!='' and hero[0]!=[]:
-        enti['hero'] = hero[0][0]
+        enti['hero'] = hero[0][id]
     dic = {}
     tmp['entities'] = enti
     # print(tmp['entities'])
@@ -256,5 +264,5 @@ for line in f:
     # print(line.split('\t'))
     if (text in list_champions) == False:
         list_champions.append(text)
-
+list_champions.append('Rell')
 f.close()
